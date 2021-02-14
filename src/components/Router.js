@@ -12,15 +12,15 @@ const AppRouter = ({isLoggedIn}) => {
             <Switch>
                 {isLoggedIn ? 
                 <>
-                <Route exact path="/">
+                <Route exact="true" path="/">
                     <Home />
                 </Route>
-                <Route exact path="/profile">
+                <Route exact="true" path="/profile">
                     <Profile />
                 </Route>
                 <Redirect from="*" to="/" />
                 </> : 
-                (<><Route exact path="/">
+                (<><Route exact="true" path="/">
                     <Auth />
                 </Route>
                 <Redirect from="*" to="/" />
