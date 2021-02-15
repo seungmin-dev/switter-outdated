@@ -1,28 +1,24 @@
 import React, {useEffect, useState} from "react";
 import {dbService} from "fbase";
 
-const Home = () => {
+const Home = ({userObj}) => {
     const [sweet, setSweet] = useState("");
     const [sweets, setSweets] = useState([]);
-    const dbSweets = async() => {
-        const dbSweets = await dbService.collection("sweets").get();
-        //dbSweets.forEach((document) => console.log(document.data()));
-        dbSweets.forEach((document) => {
-            const sweetObj = {
-                ...document.data(),
-                id : document.id
-            }
-            setSweets((prev) => [sweetObj, ...prev]);
-        });
-    }
     useEffect(() => {
-        dbSweets();
+        dbService.collection("sweets").onSnapshot((snapshot) => {
+            const sweetArray = snapshot.docs.map((doc) => ({
+                id: doc.id,
+                ...doc.data(),
+            }));
+            setSweets(sweetArray);
+        });
     }, []);
     const onSubmit = async (event) => {
         event.preventDefault();
         await dbService.collection("sweets").add({
-            sweet,
-            createdAt : Date.now()
+            text : sweet,
+            createdAt : Date.now(),
+            creatorId : userObj.uid
         });
         setSweet("");
     }
@@ -38,7 +34,7 @@ const Home = () => {
             </form>
             <div>
                 {sweets.map(sweet => <div key={sweet.id}>
-                    <h4>{sweet.sweet}</h4>
+                    <h4>{sweet.text}</h4>
                     </div>)}
             </div>
         </div>
