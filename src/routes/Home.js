@@ -1,5 +1,6 @@
 import React, {useEffect, useState} from "react";
 import {dbService} from "fbase";
+import Sweet from "components/Sweet";
 
 const Home = ({userObj}) => {
     const [sweet, setSweet] = useState("");
@@ -8,10 +9,10 @@ const Home = ({userObj}) => {
         dbService.collection("sweets").onSnapshot((snapshot) => {
             const sweetArray = snapshot.docs.map((doc) => ({
                 id: doc.id,
-                ...doc.data(),
+                ...doc.data()
             }));
             setSweets(sweetArray);
-        });
+        })
     }, []);
     const onSubmit = async (event) => {
         event.preventDefault();
@@ -33,9 +34,9 @@ const Home = ({userObj}) => {
                 <input type="submit" value="Sweet" />
             </form>
             <div>
-                {sweets.map(sweet => <div key={sweet.id}>
-                    <h4>{sweet.text}</h4>
-                    </div>)}
+                {sweets.map(sweet => 
+                    <Sweet key={sweet.id} sweetObj={sweet} isOwner={sweet.creatorId === userObj.uid} />
+                )}
             </div>
         </div>
     );
