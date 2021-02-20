@@ -1,11 +1,12 @@
 import React, {useEffect, useState} from "react";
-import {dbService} from "fbase";
+import {v4 as uuidv4} from "uuid";
+import {dbService, storageService} from "fbase";
 import Sweet from "components/Sweet";
 
 const Home = ({userObj}) => {
     const [sweet, setSweet] = useState("");
     const [sweets, setSweets] = useState([]);
-    const [attachment, setAttachment] = useState();
+    const [attachment, setAttachment] = useState("");
     useEffect(() => {
         dbService.collection("sweets").onSnapshot((snapshot) => {
             const sweetArray = snapshot.docs.map((doc) => ({
@@ -17,12 +18,23 @@ const Home = ({userObj}) => {
     }, []);
     const onSubmit = async (event) => {
         event.preventDefault();
-        await dbService.collection("sweets").add({
+        // npm install uuid(랜덤아이디 생성기능)
+        let attachmentUrl = "";
+        if( attachment !== "" ) {
+            const attachmentRef = storageService.ref().child(`${userObj.uid}/${uuidv4()}`);
+            const response = await attachmentRef.putString(attachment, "data_url");
+            attachmentUrl = await response.ref.getDownloadURL();
+        }
+        const sweetObj = {
             text : sweet,
             createdAt : Date.now(),
-            creatorId : userObj.uid
-        });
+            creatorId : userObj.uid,
+            attachmentUrl
+        }   
+        await dbService.collection("sweets").add(sweetObj);
         setSweet("");
+        console.log('setAttachment:', setAttachment);
+        setAttachment("");
     }
     const onChange = (event) => {
         const {target:{value}} = event;
@@ -38,7 +50,7 @@ const Home = ({userObj}) => {
         }
         reader.readAsDataURL(theFile);
     };
-    const onClearAttachment = () => setAttachment(null);
+    const onClearAttachment = () => {setAttachment("")};
     return (
         <div>
             <form onSubmit={onSubmit}>
@@ -46,7 +58,7 @@ const Home = ({userObj}) => {
                 <input type="file" accept="image/*" onChange={onFileChange} />
                 <input type="submit" value="Sweet" />
                 {attachment && <div>
-                    <img sre={attachment} width="50px" height="50px" />
+                    <img src={attachment} width="50px" height="50px" />
                     <button onClick={onClearAttachment}>Clear</button>
                 </div>}
             </form>
